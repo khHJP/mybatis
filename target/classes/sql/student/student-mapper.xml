@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="student"> <!-- namespace: 중복된 값을 제거하기위해 폴더처럼 묶어내는 것.  -->
+	<!-- mapper의 타입은 별칭 미사용시 항상 풀네임으로 적어야함. parameterType은 생략 가능. -->
+	<!-- 쿼리 값대입은 #{property이름} 표현식을 사용한다. get어쩌고.. 할때 어쩌고 -->
+	<insert id="insertStudent"> 
+		insert into
+			student(no, name, tel)
+		values(
+		seq_student_no.nextval, #{name}, #{tel}
+		)
+	</insert>
+
+	<!-- select태그 사용시 resultType 혹은 resultMap 속성을 반드시 작성해야 함!  -->
+	<select id="getTotalCount" resultType="_int"> <!-- int : Integer매퍼클래스, _int: 기본형int -->
+		select
+			count(*)
+		from
+			student
+		where
+			deleted_at is null
+	</select>
+	
+<!-- 	<select id="selectOneStudent" resultType="student"> mybatis-config.xml에 별칭을 등록해뒀음! -->
+	<select id="selectOneStudent" resultMap="studentDtoMap">
+		select
+			*
+		from
+			student
+		where
+			deleted_at is null 
+			and no = #{no}
+	</select>
+	<resultMap type="student" id="studentDtoMap">
+<!-- 		<id column="NO" property="no" /> 
+		<result column="NAME" property="name"/> 
+		<result column="TEL" property="tel"/>
+		<result column="CREATED_AT" property="createdAt"/>
+		<result column="UPDATED_AT" property="updatedAt"/>
+		<result column="DELETED_AT" property="deletedAt"/> -->
+		<!-- mybatis-config에서 mapUnderscore..를 사용해서 생략가능 (dto일때만 적용) -->
+	</resultMap>
+	
+	
+	
+	
+<!-- 	<select id="selectOneStudentMap" resultType="map">  -->
+	<select id="selectOneStudentMap" resultMap="studentMap"> <!-- map타입으로 받아옴 -->
+		SELECT
+			NO, NAME, TEL, CREATED_AT, UPDATED_AT, DELETED_AT
+		FROM
+			STUDENT
+		WHERE
+			DELETED_AT IS NULL 
+			AND NO = #{no}
+	</select>
+	<!-- 
+	resultMap태그 결과집합(ResultSet)의 행별 자바객체 매핑을 처리하는 태그 
+		sql에서의 created_at <-> java에서 createdAt
+	-->
+	<resultMap type="map" id="studentMap">
+		<id column="NO" property="no" /> <!-- pk컬럼들은 id태그 사용  -->
+		<result column="NAME" property="name"/> <!-- pk 아닌 컬럼들은 result태그 사용  -->
+		<result column="TEL" property="tel"/>
+		<result column="CREATED_AT" property="createdAt"/>
+		<result column="UPDATED_AT" property="updatedAt"/>
+		<result column="DELETED_AT" property="deletedAt"/>
+	</resultMap>
+	
+	<!-- 한 행에 해당하는 type이기 때문에 list가 아니라 student가 와야함! ** -->
+<!-- 	<select id="selectStudentList" resultType="student">  -->
+	<select id="selectStudentList" resultMap="studentDtoMap"> 
+		select
+			*
+		from
+			student
+		where
+			deleted_at is null
+		order by
+			created_at desc
+	</select>
+	
+<!-- 	<select id="selectStudentMapList" resultType="map"> -->
+	<select id="selectStudentMapList" resultMap="studentMap">
+		select
+			*
+		from
+			student
+		where
+			deleted_at is null
+		order by
+			created_at desc
+	</select>
+	
+	
+	<update id="updateStudent">
+		update 
+			student
+		set
+			name = #{name},
+			tel = #{tel},
+			updated_at = sysdate
+		where
+			deleted_at is null
+		 	and no = #{no}
+	</update>
+	
+	<update id="deleteStudent">
+		update
+			student
+		set
+			deleted_at = sysdate
+		where
+		 	no = #{no}
+	</update>
+</mapper>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="emp">
+	<select id="selectEmpList" resultMap="empMap">
+		select
+			*
+		from
+			emp
+		where
+			quit_yn = 'N'
+		order by
+			emp_id
+	</select>
+
+	<!-- ${식별자} 컬러명, 테이블명을 동적으로 작성하는 경우 다른 표시 없이 ${}로 감싸기 -->
+	<select id="search1" resultMap="empMap">
+		select
+			*
+		from
+			emp
+		where
+			quit_yn = 'N'
+			and
+			${searchType} like '%' || #{searchKeyword} || '%'
+		order by
+			emp_id 			
+	</select>
+
+	<select id="search2" resultMap="empMap">
+		select
+		    *
+		from
+		    (
+		        select
+		            e.*,
+		            decode(substr(emp_no, 8, 1), '1', '남', '3', '남', '여') gender
+		        from
+		            emp e
+		    )
+		where
+		    quit_yn = 'N' <!-- 항상 있어야할 조건을 여기에. 없을경우 1 = 1 <같이 항상 참인것을 적어놔야 함. -->
+		    <if test="searchType != null and searchType !='' and searchKeyword != null and searchKeyword !=''">
+		    and
+		    	${searchType} like '%' || #{searchKeyword} ||'%'		    
+		    </if>
+		    
+		    <if test="gender != null">
+		    and
+		   		gender = #{gender}					    
+		    </if>
+		    
+		    <if test="salary != null and salaryCompare !=null">
+		    and
+		    	<choose>
+		    		<!--  꺾쇠<>, & 예약어는 CDATA Section태그에 작성! -->
+		    		<when test="salaryCompare eq 'ge'">
+		    			salary <![CDATA[ >= ]]> #{salary}
+		    		</when>
+		    		<when test="salaryCompare eq 'le'">
+				    	salary <![CDATA[ <= ]]> #{salary}    		
+		    		</when>
+		    	</choose>	
+		    </if>
+		    
+		    <if test="hireDate != null and hiredateCompare != null">
+		    and
+<!-- 		   	<choose>
+		    		<when test="hiredateCompare eq 'ge'">
+		    			hire_date <![CDATA[ >= ]]> to_date( #{hireDate} )
+		    		</when>
+		    		<when test="hiredateCompare eq 'le'">
+				    	hire_date <![CDATA[ <= ]]> to_date( #{hireDate} )    		
+		    		</when>
+		    	</choose>	 -->
+		    	
+		    	<choose>
+		    		<when test="hiredateCompare eq 'ge'">
+		    			hire_date <![CDATA[ >= ]]> #{hireDate} 
+		    		</when>
+		    		<when test="hiredateCompare eq 'le'">
+				    	hire_date <![CDATA[ <= ]]> #{hireDate}   		
+		    		</when>
+		    	</choose>	
+		    </if>
+	</select>
+
+	<!-- column은 대소문자 구분 안함 -->
+	<resultMap type="map" id="empMap">
+		<id column="emp_id" property="empId"></id>
+		<result column="EMP_NAME" property="empName"/>
+		<result column="EMP_NO" property="empNo"/>
+		<result column="gender" property="gender"/>
+		<result column="EMAIL" property="email"/>
+		<result column="PHONE" property="phone"/>
+		<result column="DEPT_CODE" property="deptCode"/>
+		<result column="JOB_CODE" property="jobCode"/>
+		<result column="SAL_LEVEL" property="salLevel"/>
+		<result column="SALARY" property="salary"/>
+		<result column="BONUS" property="bonus"/>
+		<result column="MANAGER_ID" property="managerId"/>
+		<result column="HIRE_DATE" property="hireDate"/>
+		<result column="QUIT_DATE" property="quitDate"/>
+		<result column="QUIT_YN" property="quitYn"/>
+	</resultMap>
+	
+</mapper>
